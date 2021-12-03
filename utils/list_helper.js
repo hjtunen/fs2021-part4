@@ -25,8 +25,31 @@ const favoriteBlog = (blogs) => {
   return favorite
 }
 
+const mostBlogs = (blogs) => {
+  const map = new Map()
+  let author = ""
+  let maxBlogs = 0
+
+  for (let blog of blogs) {
+    if (!map.has(blog.author)) {
+      map.set(blog.author, 0)
+    }
+    map.set(blog.author, map.get(blog.author) + 1)
+  }
+
+  for (let [key, value] of map) {
+    if (value > maxBlogs) {
+      author = key
+      maxBlogs = value
+    }
+  }
+
+  return { author: author, blogs: maxBlogs }
+}
+
 module.exports = {
   dummy,
   totalLikes,
-  favoriteBlog
+  favoriteBlog,
+  mostBlogs
 }
