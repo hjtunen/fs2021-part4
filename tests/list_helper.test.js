@@ -87,8 +87,8 @@ describe("total likes", () => {
 })
 
 describe("favorite blog", () => {
-  test("of empty list is undefined", () => {
-    expect(listHelper.favoriteBlog([])).toBe(undefined)
+  test("of empty list", () => {
+    expect(listHelper.favoriteBlog([])).toEqual({ title: "", author: "", likes: 0 })
   })
 
   test("of single item list returns the same item", () => {
@@ -108,5 +108,15 @@ describe("most blogs by single author", () => {
 
   test("empty list", () => {
     expect(listHelper.mostBlogs([])).toEqual({ author: "", blogs: 0 })
+  })
+})
+
+describe("most likes by single author", () => {
+  test("big list", () => {
+    expect(listHelper.mostLikes(manyBlogs)).toEqual({ author: "Edsger W. Dijkstra", likes: 17 })
+  })
+
+  test("empty list", () => {
+    expect(listHelper.mostLikes([])).toEqual({ author: "", likes: 0 })
   })
 })
