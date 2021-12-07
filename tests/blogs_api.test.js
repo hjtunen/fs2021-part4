@@ -40,6 +40,18 @@ test("a specific blog is within the returned blogs", async () => {
   )
 })
 
+test("inserting a blog increases the amount of blogs by one", async () => {
+  const blog = { title: "title", author: "author", url: "url", likes: 0 }
+  await api
+    .post("/api/blogs")
+    .send(blog)
+    .expect(201)
+    .expect("Content-Type", /application\/json/)
+
+  const response = await api.get("/api/blogs")
+  expect(response.body).toHaveLength(helper.initialBlogs.length + 1)
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
