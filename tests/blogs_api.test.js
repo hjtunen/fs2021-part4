@@ -103,6 +103,21 @@ describe("deletion of a blog", () => {
   })
 })
 
+describe("modifying a blog", () => {
+  test("the amount of likes changes", async () => {
+    const blogs = await helper.blogsInDb()
+    let blogToModify = blogs[0]
+    blogToModify.likes = 999
+
+    const result = await api
+      .put(`/api/blogs/${blogToModify.id}`)
+      .send(blogToModify)
+      .expect(200)
+
+    expect(result.body.likes).toBe(999)
+  })
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
