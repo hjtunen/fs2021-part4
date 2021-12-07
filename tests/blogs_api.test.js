@@ -52,6 +52,14 @@ test("inserting a blog increases the amount of blogs by one", async () => {
   expect(response.body).toHaveLength(helper.initialBlogs.length + 1)
 })
 
+test("likes default to 0", async () => {
+  const blog = { title: "title", author: "author", url: "url" }
+  const response = await api.post("/api/blogs").send(blog).expect(201)
+
+  expect(response.body.likes).toBeDefined()
+  expect(response.body.likes).toBe(0)
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
