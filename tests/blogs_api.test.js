@@ -40,34 +40,67 @@ test("a specific blog is within the returned blogs", async () => {
   )
 })
 
-test("inserting a blog increases the amount of blogs by one", async () => {
-  const blog = { title: "title", author: "author", url: "url", likes: 0 }
-  await api
-    .post("/api/blogs")
-    .send(blog)
-    .expect(201)
-    .expect("Content-Type", /application\/json/)
+describe("inserting a blog", () => {
+  test("inserting a blog increases the amount of blogs by one", async () => {
+    const blog = { title: "title", author: "author", url: "url", likes: 0 }
+    await api
+      .post("/api/blogs")
+      .send(blog)
+      .expect(201)
+      .expect("Content-Type", /application\/json/)
 
-  const response = await api.get("/api/blogs")
-  expect(response.body).toHaveLength(helper.initialBlogs.length + 1)
+    const response = await api.get("/api/blogs")
+    expect(response.body).toHaveLength(helper.initialBlogs.length + 1)
+  })
+
+  test("likes default to 0", async () => {
+    const blog = { title: "title", author: "author", url: "url" }
+    const response = await api.post("/api/blogs").send(blog).expect(201)
+
+    expect(response.body.likes).toBeDefined()
+    expect(response.body.likes).toBe(0)
+  })
+
+  test("title has to exist", async () => {
+    const blog = { author: "author", url: "url", likes: 0 }
+    await api.post("/api/blogs").send(blog).expect(400)
+  })
+
+  test("url has to exist", async () => {
+    const blog = { title: "title", author: "author", likes: 0 }
+    await api.post("/api/blogs").send(blog).expect(400)
+  })
 })
 
-test("likes default to 0", async () => {
-  const blog = { title: "title", author: "author", url: "url" }
-  const response = await api.post("/api/blogs").send(blog).expect(201)
+describe("viewing a blog by id", () => {
+  test("succeeds with a valid id", async () => {
+    const blogs = await helper.blogsInDb()
+    const blogToView = blogs[0]
 
-  expect(response.body.likes).toBeDefined()
-  expect(response.body.likes).toBe(0)
+    const result = await api
+      .get(`/api/blogs/${blogToView.id}`)
+      .expect(200)
+
+    expect(result.body).toEqual(blogToView)
+  })
+  test("fails with 404 if blog does not exist", async () => {
+    const nonId = await helper.nonExistingId()
+
+    await api
+      .get(`/api/notes/${nonId}`)
+      .expect(404)
+  })
 })
 
-test("title has to exist", async () => {
-  const blog = { author: "author", url: "url", likes: 0 }
-  await api.post("/api/blogs").send(blog).expect(400)
-})
+describe("deletion of a blog", () => {
+  test("succeeds with 204 if valid id", async () => {
+    const blogs = await helper.blogsInDb()
+    const blogToDelete = blogs[0]
 
-test("url has to exist", async () => {
-  const blog = { title: "title", author: "author", likes: 0 }
-  await api.post("/api/blogs").send(blog).expect(400)
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
+  })
 })
 
 afterAll(() => {
