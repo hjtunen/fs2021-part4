@@ -60,6 +60,16 @@ test("likes default to 0", async () => {
   expect(response.body.likes).toBe(0)
 })
 
+test("title has to exist", async () => {
+  const blog = { author: "author", url: "url", likes: 0 }
+  await api.post("/api/blogs").send(blog).expect(400)
+})
+
+test("url has to exist", async () => {
+  const blog = { title: "title", author: "author", likes: 0 }
+  await api.post("/api/blogs").send(blog).expect(400)
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
