@@ -5,5 +5,6 @@ Content-Type: application/json
   "title": "titteli",
   "author": "authori",
   "url": "urli",
-  "likes": 100
+  "likes": 100,
+  "userId": "61b32e20e2f48e01ccaac34c"
 }
