@@ -2,13 +2,27 @@ const mongoose = require("mongoose")
 const supertest = require("supertest")
 const app = require("../app")
 const helper = require("./test_helper")
-
+const User = require("../models/user")
 const api = supertest(app)
 const Blog = require("../models/blog")
+const bcrypt = require("bcrypt")
+var token = null
 
 beforeEach(async () => {
   await Blog.deleteMany({})
   await Blog.insertMany(helper.initialBlogs)
+
+  await User.deleteMany({})
+
+  const passwordHash = await bcrypt.hash("sekret", 10)
+  const user = new User({ username: "root", passwordHash })
+
+  await user.save()
+
+  const response = await api.post("/api/login").send({ username: "root", password: "sekret" })
+  //console.log(response)
+  token = `bearer ${response.body.token}`
+  //console.log(token)
 })
 
 test("blogs are returned as json", async () => {
@@ -45,6 +59,7 @@ describe("inserting a blog", () => {
     const blog = { title: "title", author: "author", url: "url", likes: 0 }
     await api
       .post("/api/blogs")
+      .set("Authorization", token)
       .send(blog)
       .expect(201)
       .expect("Content-Type", /application\/json/)
@@ -55,7 +70,11 @@ describe("inserting a blog", () => {
 
   test("likes default to 0", async () => {
     const blog = { title: "title", author: "author", url: "url" }
-    const response = await api.post("/api/blogs").send(blog).expect(201)
+    const response = await api
+      .post("/api/blogs")
+      .set("Authorization", token)
+      .send(blog)
+      .expect(201)
 
     expect(response.body.likes).toBeDefined()
     expect(response.body.likes).toBe(0)
@@ -63,12 +82,20 @@ describe("inserting a blog", () => {
 
   test("title has to exist", async () => {
     const blog = { author: "author", url: "url", likes: 0 }
-    await api.post("/api/blogs").send(blog).expect(400)
+    await api
+      .post("/api/blogs")
+      .set("Authorization", token)
+      .send(blog)
+      .expect(400)
   })
 
   test("url has to exist", async () => {
     const blog = { title: "title", author: "author", likes: 0 }
-    await api.post("/api/blogs").send(blog).expect(400)
+    await api
+      .post("/api/blogs")
+      .set("Authorization", token)
+      .send(blog)
+      .expect(400)
   })
 })
 
@@ -99,6 +126,7 @@ describe("deletion of a blog", () => {
 
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set("Authorization", token)
       .expect(204)
   })
 })
