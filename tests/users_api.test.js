@@ -61,6 +61,88 @@ describe("when there is initially one user at db", () => {
     const usersAtEnd = await helper.usersInDb()
     expect(usersAtEnd).toHaveLength(usersAtStart.length)
   })
+
+  test("creation fails with proper statuscode and message if username missing", async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = {
+      name: "Superuser",
+      password: "salainen",
+    }
+
+    const result = await api
+      .post("/api/users")
+      .send(newUser)
+      .expect(400)
+      .expect("Content-Type", /application\/json/)
+
+    expect(result.body.error).toContain("`username` is required")
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  })
+
+  test("creation fails with proper statuscode and message if username is too short", async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = {
+      username: "a",
+      name: "Superuser",
+      password: "salainen",
+    }
+
+    const result = await api
+      .post("/api/users")
+      .send(newUser)
+      .expect(400)
+      .expect("Content-Type", /application\/json/)
+
+    expect(result.body.error).toContain("`username` (`a`) is shorter")
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  })
+
+  test("creation fails with proper statuscode and message if password doesn't exist", async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = {
+      username: "root",
+      name: "Superuser"
+    }
+
+    const result = await api
+      .post("/api/users")
+      .send(newUser)
+      .expect(400)
+      .expect("Content-Type", /application\/json/)
+
+    expect(result.body.error).toContain("password doesn't exist or is less than three characters long")
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  })
+
+  test("creation fails with proper statuscode and message if password is too short", async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = {
+      username: "root",
+      name: "Superuser"
+    }
+
+    const result = await api
+      .post("/api/users")
+      .send(newUser)
+      .expect(400)
+      .expect("Content-Type", /application\/json/)
+
+    expect(result.body.error).toContain("password doesn't exist or is less than three characters long")
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  })
+
 })
 
 afterAll(() => {

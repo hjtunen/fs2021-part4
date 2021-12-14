@@ -1,5 +1,6 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
+//Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIiLCJpZCI6IjYxYjMyZTIwZTJmNDhlMDFjY2FhYzM0YyIsImlhdCI6MTYzOTQ3NzMwOH0.x5LHFLyHQCKoYf5n-oLUcPh9wmNb55KaN0mXseE01gg
 
 { 
   "title": "titteli",
