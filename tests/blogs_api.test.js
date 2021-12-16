@@ -9,9 +9,6 @@ const bcrypt = require("bcrypt")
 var token = null
 
 beforeEach(async () => {
-  await Blog.deleteMany({})
-  await Blog.insertMany(helper.initialBlogs)
-
   await User.deleteMany({})
 
   const passwordHash = await bcrypt.hash("sekret", 10)
@@ -23,6 +20,19 @@ beforeEach(async () => {
   //console.log(response)
   token = `bearer ${response.body.token}`
   //console.log(token)
+
+  const users = await User.find({})
+  //console.log(users)
+  const id = users[0]._id
+
+  const blogsToAdd = helper.initialBlogs.map(blog => {
+    blog.user = id
+    return blog
+  })
+  //console.log(blogsToAdd)
+
+  await Blog.deleteMany({})
+  await Blog.insertMany(blogsToAdd)
 })
 
 test("blogs are returned as json", async () => {
@@ -97,6 +107,18 @@ describe("inserting a blog", () => {
       .send(blog)
       .expect(400)
   })
+
+  test("inserting a blog doesn't work without token", async () => {
+    const blog = { title: "title", author: "author", url: "url", likes: 0 }
+    await api
+      .post("/api/blogs")
+      .send(blog)
+      .expect(401)
+      .expect("Content-Type", /application\/json/)
+
+    const response = await api.get("/api/blogs")
+    expect(response.body).toHaveLength(helper.initialBlogs.length)
+  })
 })
 
 describe("viewing a blog by id", () => {
@@ -108,7 +130,7 @@ describe("viewing a blog by id", () => {
       .get(`/api/blogs/${blogToView.id}`)
       .expect(200)
 
-    expect(result.body).toEqual(blogToView)
+    expect(result.body.title).toBe(blogToView.title)
   })
   test("fails with 404 if blog does not exist", async () => {
     const nonId = await helper.nonExistingId()
